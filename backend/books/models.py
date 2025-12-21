@@ -32,13 +32,6 @@ class Book(models.Model):
     author = models.CharField(max_length=200, verbose_name='저자')
     publisher = models.CharField(max_length=100, verbose_name='출판사')
     pub_date = models.DateField(null=True, blank=True, verbose_name='출판일')
-    category_name = models.CharField(
-        max_length=200,
-        null=True,
-        blank=True,
-        verbose_name='알라딘 카테고리',
-        help_text='알라딘 API 원본 카테고리'
-    )
     cover = models.URLField(max_length=500, null=True, blank=True, verbose_name='표지 이미지 URL')
     description = models.TextField(null=True, blank=True, verbose_name='도서 소개')
     price_standard = models.IntegerField(default=0, verbose_name='정가')
@@ -51,6 +44,20 @@ class Book(models.Model):
         help_text='알라딘 API 상품 ID'
     )
     mall_type = models.CharField(max_length=20, null=True, blank=True, verbose_name='판매처')
+
+    # 알라딘 순위 정보
+    customer_review_rank = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name='알라딘 고객 리뷰 랭킹',
+        help_text='알라딘 고객 리뷰 랭킹 (0~10)'
+    )
+    best_rank = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name='알라딘 베스트셀러 순위',
+        help_text='알라딘 베스트셀러 순위'
+    )
 
     # 우리 서비스 평점 (Signal로 자동 업데이트)
     rating_count = models.IntegerField(
@@ -78,6 +85,8 @@ class Book(models.Model):
             models.Index(fields=['isbn'], name='idx_book_isbn'),
             models.Index(fields=['-average_rating'], name='idx_book_rating'),
             models.Index(fields=['-created_at'], name='idx_book_created'),
+            models.Index(fields=['-best_rank'], name='idx_book_best_rank'),
+            models.Index(fields=['-customer_review_rank'], name='idx_book_review_rank'),
         ]
 
     def __str__(self):
