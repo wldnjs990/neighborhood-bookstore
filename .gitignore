@@ -61,3 +61,8 @@ __pycache__/
 *$py.class
 *.so
 .Python
+
+# 공용
+
+# env
+.env
