@@ -5,7 +5,7 @@ import json
 # from pprint import pprint as print
 
 
-API_KEY = 'ttbchoiinho971721001'
+API_KEY = ''
 
 url = 'http://www.aladin.co.kr/ttb/api/ItemList.aspx'
 
