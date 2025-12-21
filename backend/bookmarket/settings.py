@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'accounts',
     'books',
     'trades',
+    # packages
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
