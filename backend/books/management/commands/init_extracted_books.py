@@ -120,7 +120,7 @@ class Command(BaseCommand):
                     fixture_pk += 1
                     category_counts[category_pk] += 1
         print('도서 데이터 조회 - 매핑 - 추출 완료')
-        extracted_json_file = os.path.join(settings.BASE_DIR / 'data' / 'extracted_books.json')
+        extracted_json_file = os.path.join(settings.BASE_DIR / 'data' / 'extracted_books_fixtures.json')
         # extracted_books를 JSON으로 저장
         with open(extracted_json_file, 'w', encoding='utf-8') as f:
             json.dump(extracted_books, f, ensure_ascii=False, indent=4)
