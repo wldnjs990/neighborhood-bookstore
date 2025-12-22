@@ -2,18 +2,12 @@ from rest_framework import serializers
 from .models import Book
 
 class BookSearchSerializer(serializers.ModelSerializer):
-    category = serializers.CharField(source='category.name', read_only=True)
-
     class Meta:
         model = Book
         fields = [
-            'id',
-            'title',
-            'author',
-            'publisher',
-            'cover',
-            'average_rating',
-            'rating_count',
-            'category',
+            "id",
+            "title",
+            "author",
+            "category",  # ← category_id
+            "adult",
         ]
-        read_only_fields = ['id']
