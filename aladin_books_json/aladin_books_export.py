@@ -4,6 +4,7 @@ import json
 
 API_KEY = ''
 
+
 url = 'http://www.aladin.co.kr/ttb/api/ItemList.aspx'
 
 
