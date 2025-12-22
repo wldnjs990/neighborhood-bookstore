@@ -51,13 +51,26 @@ class BookListSerializer(serializers.ModelSerializer):
 
 
 
-class BookReviewRankSerializer(serializers.ModelSerializer):
+# class BookReviewRankSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Book
+#         fields = ('cover', 'title', 'author')
+
+
+# class BookRatingSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = BookRating
+#         fields = '__all__'
+
+
+# # 알고리즘 신
+class BookSearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
-        fields = ('cover', 'title', 'author')
-
-
-class BookRatingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BookRating
-        fields = '__all__'
+        fields = [
+            "id",
+            "title",
+            "author",
+            "category",
+            "adult",
+        ]
