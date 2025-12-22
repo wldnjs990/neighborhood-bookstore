@@ -13,6 +13,7 @@ def signup(request):
     if serializer.is_valid():
         user = serializer.save()
         refresh = RefreshToken.for_user(user)
+
         return Response({
             'user': UserSerializer(user).data,
             'access': str(refresh.access_token),
@@ -20,6 +21,32 @@ def signup(request):
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    """로그아웃 - Refresh Token을 블랙리스트에 추가"""
+    try:
+        refresh_token = request.data.get('refresh')
+        if not refresh_token:
+            return Response(
+                {'error': 'Refresh token이 필요합니다.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # 현재 토큰 가져오기
+        token = RefreshToken(refresh_token)
+        # 토큰 블랙리스트 등록(토큰 사용 불가 처리)
+        token.blacklist()
+
+        return Response(
+            {'message': '로그아웃되었습니다.'},
+            status=status.HTTP_205_RESET_CONTENT
+        )
+    except Exception as e:
+        return Response(
+            {'error': str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
