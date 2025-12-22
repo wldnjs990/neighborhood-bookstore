@@ -8,6 +8,6 @@ class BookSearchSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "author",
-            "category",  # ← category_id
+            "category",
             "adult",
         ]
