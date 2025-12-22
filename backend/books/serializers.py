@@ -1,5 +1,4 @@
-from rest_framework import serializers
-from .models import Book
+# books/serializers.py
 
 
 # 1. 베스트셀러/일반 목록용 (북마크 정보 없음)

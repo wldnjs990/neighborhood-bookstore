@@ -81,8 +81,7 @@ class BookPagination(PageNumberPagination):
                 page_size = min(int(size), self.max_page_size)  # 최대 페이지 크기로 제한
             except ValueError:
                 pass  # 잘못된 값이 들어올 경우 기본 page_size 유지
-        # 전체 데이터 수를 바탕으로 총 페이지 수 계산
-        total_pages = ceil(self.page.paginator.count / float(page_size))
+        total_pages = ceil(self.page.paginator.count / float(page_size)) # 전체 데이터 수를 바탕으로 총 페이지 수 계산
 
         # 기존 응답에 'total_pages'를 추가
         return Response({
