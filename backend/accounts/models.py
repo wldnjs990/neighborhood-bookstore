@@ -4,7 +4,8 @@ from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
     """커스텀 사용자 모델"""
-    nickname = models.CharField(max_length=50, unique=True, verbose_name='닉네임')
+    nickname = models.CharField(max_length=50, unique=True, null=True, blank=True, verbose_name='닉네임')
+    age = models.IntegerField(null=True, blank=True, verbose_name='나이')
     book_mbti = models.CharField(
         max_length=4,
         null=True,
