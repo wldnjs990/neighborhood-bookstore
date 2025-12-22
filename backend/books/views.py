@@ -44,14 +44,14 @@ class BookSearchAPIView(APIView):
         # =====================
         # 🔍 검색 타입 (기본: 제목으로 검색)
         # =====================
-        search_type = request.query_params.get("search_type", "title")  # 쿼리 파라미터에서 검색 타입을 가져옴 (기본값: 'title')
+        searchType = request.query_params.get("searchType", "title")  # 쿼리 파라미터에서 검색 타입을 가져옴 (기본값: 'title')
         search = request.query_params.get("search")                     # 쿼리 파라미터에서 검색어를 가져옴
 
         
         if search:
-            if search_type == "title":
+            if searchType == "title":
                 queryset = queryset.filter(title__icontains=search)     # 제목에 검색어가 포함된 도서만 필터링
-            elif search_type == "author":
+            elif searchType == "author":
                 queryset = queryset.filter(author__icontains=search)    # 저자에 검색어가 포함된 도서만 필터링
 
         # =====================
