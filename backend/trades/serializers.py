@@ -36,14 +36,14 @@ class TradeSerializer(serializers.ModelSerializer):
     user = UserSimpleSerializer(read_only=True)
     
     # book -> adult, title, price_standard, category 추가
-    book = BookTradeSerializer(read_only=True)
+    # book = BookTradeSerializer(read_only=True)
 
     
     class Meta:
         model = Trade
         # 메인 페이지는 content, kakao_chat_url 필요 없음
         fields = [
-            'id', 'user', 'book', 'title',
+            'id', 'user', 'book', 'title', 'content',
             'sale_type', 'price', 'region', 'status', 
             'image', 'view_count', 'created_at'
         ]

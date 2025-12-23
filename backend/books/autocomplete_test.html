@@ -52,50 +52,65 @@
   <p id="selected"></p>
 
   <script>
-    const input = document.getElementById('book-input')
-    const dropdown = document.getElementById('dropdown')
-    const selected = document.getElementById('selected')
+const input = document.getElementById('book-input')
+const dropdown = document.getElementById('dropdown')
+const selected = document.getElementById('selected')
 
-    let timer = null
+let timer = null
+let isComposing = false
 
-    input.addEventListener('input', () => {
-      clearTimeout(timer)
+input.addEventListener('compositionstart', () => {
+  isComposing = true
+})
 
-      const query = input.value.trim()
+input.addEventListener('compositionend', () => {
+  isComposing = false
+  triggerSearch()
+})
 
-      if (!query) {
+input.addEventListener('input', () => {
+  if (isComposing) return
+  triggerSearch()
+})
+
+function triggerSearch() {
+  clearTimeout(timer)
+
+  const query = input.value.trim()
+
+  if (query.length < 2) {
+    dropdown.style.display = 'none'
+    return
+  }
+
+  timer = setTimeout(async () => {
+    const res = await fetch(
+      `http://127.0.0.1:8000/api/books/autocomplete/?q=${encodeURIComponent(query)}`
+    )
+    const books = await res.json()
+
+    dropdown.innerHTML = ''
+
+    if (books.length === 0) {
+      dropdown.style.display = 'none'
+      return
+    }
+
+    books.forEach(book => {
+      const li = document.createElement('li')
+      li.textContent = book.title
+      li.onclick = () => {
+        input.value = book.title
+        selected.textContent = `선택된 도서: ${book.title} (${book.id})`
         dropdown.style.display = 'none'
-        return
       }
-
-      timer = setTimeout(async () => {
-        const res = await fetch(
-          `http://127.0.0.1:8000/api/books/autocomplete/?q=${query}`
-        )
-        const books = await res.json()
-
-        dropdown.innerHTML = ''
-
-        if (books.length === 0) {
-          dropdown.style.display = 'none'
-          return
-        }
-
-        books.forEach(book => {
-          const li = document.createElement('li')
-          li.textContent = book.title
-          li.onclick = () => {
-            input.value = book.title
-            selected.textContent = `선택된 도서: ${book.title + book.id}`
-            dropdown.style.display = 'none'
-          }
-          dropdown.appendChild(li)
-        })
-
-        dropdown.style.display = 'block'
-      }, 300)
+      dropdown.appendChild(li)
     })
-  </script>
+
+    dropdown.style.display = 'block'
+  }, 300)
+}
+</script>
 
 </body>
 </html>
