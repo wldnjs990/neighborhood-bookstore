@@ -59,3 +59,12 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
         if value and User.objects.exclude(pk=user.pk).filter(nickname=value).exists():
             raise serializers.ValidationError("이미 사용 중인 닉네임입니다.")
         return value
+
+
+# 중고거래 조회용
+class UserSimpleSerializer(serializers.ModelSerializer):
+    """중고거래 결과에서 username, email 등을 제외하고 id, nickname만 출력"""
+    class Meta:
+        model = User
+        # 모델에 username, email이 있어도 여기에 안 적으면 응답 데이터에서 빠짐!
+        fields = ('id', 'nickname')
