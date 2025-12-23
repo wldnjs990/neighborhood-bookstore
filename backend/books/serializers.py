@@ -1,12 +1,24 @@
 from rest_framework import serializers
-from .models import Book
-
+from .models import Book, BookRating
+# accounts 앱에 이미 정의된 UserSerializer를 가져옵니다.
+from accounts.serializers import UserSerializer
 
 # 1. 베스트셀러/일반 목록용 (북마크 정보 없음)
 class BookPreviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = ('id', 'best_rank', 'cover', 'title', 'customer_review_rank')      
+
+
+# 도서 평점을 위한 serializer
+class BookRatingSerializer(serializers.ModelSerializer):
+    # 유저와 책은 '읽기 전용'으로 설정해서 Vue가 이 데이터를 조작하지 못하게 합니다.
+    user = serializers.ReadOnlyField(source='user.nickname') # 유저 닉네임을 보여주고 싶다면
+    book = serializers.ReadOnlyField(source='book.title')
+
+    class Meta:
+        model = BookRating
+        fields = ['score', 'user', 'book']
 
 
 # 2. 도서 상세 페이지용 (모든 정보 + 북마크 여부 포함)
@@ -30,7 +42,7 @@ class BookDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Book
-        fields = ('id', 'best_rank', 'cover', 'title', 'customer_review_rank', 'best_rank', 'rating_count', 'is_bookmarked')
+        fields = ('id', 'best_rank', 'cover', 'title', 'customer_review_rank', 'best_rank', 'rating_count', 'average_rating', 'is_bookmarked')
 
 
 # 4. 알고리즘 신 (검색)
