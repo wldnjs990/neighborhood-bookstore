@@ -6,12 +6,11 @@ class User(AbstractUser):
     """커스텀 사용자 모델"""
     nickname = models.CharField(max_length=50, unique=True, null=True, blank=True, verbose_name='닉네임')
     age = models.IntegerField(null=True, blank=True, verbose_name='나이')
-    book_mbti = models.CharField(
-        max_length=4,
+    book_mbti = models.PositiveSmallIntegerField(
         null=True,
         blank=True,
-        verbose_name='책 MBTI',
-        help_text='사용자의 독서 성향'
+        verbose_name="책 MBTI ID",
+        help_text="BookMBTI 테이블의 id 값"
     )
 
     class Meta:
@@ -21,3 +20,36 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+class BookMBTI(models.Model):
+    """
+    도서 MBTI 정의 테이블
+    (16가지 고정값)
+    - S / F
+        F (Fact) 정보형 지식, 교양, 현실 기반 (에세이, 인문, 자기계발, 논픽션) 
+        S (Story) 이야기형 스토리, 몰입, 감정 (소설, 판타지, 로맨스)
+    - R / I
+        R (Realistic) 현실형 현실 배경, 실제 문제 
+        I (Imaginary) 상상형 판타지, SF, 세계관 중심
+    - E / D
+        E (Easy) 쉬움 가볍게 읽힘, 술술 
+        D (Deep) 깊음 문장 무거움, 사유 필요
+    - P / C
+        P (Pace) 전개 빠름 짧은 챕터, 속도감 
+        C (Chunk) 전개 느림 분량 많고 묵직
+    """
+    code = models.CharField(
+        max_length=4,
+        unique=True,
+        verbose_name="MBTI 코드"
+    )
+    info = models.TextField(
+        verbose_name="MBTI 설명 / AI 프롬프트용"
+    )
+    class Meta:
+        db_table = "book_mbti"
+        verbose_name = "도서 MBTI"
+        verbose_name_plural = "도서 MBTI 목록"
+
+    def __str__(self):
+        return self.code

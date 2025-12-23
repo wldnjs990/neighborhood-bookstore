@@ -71,14 +71,12 @@ class TradeSearchAPIView(APIView):
         exclude_adult = True
 
         if user.is_authenticated:
-            # 나이가 있고, 20세 이상인 경우만 성인 가능성 열어둠
-            if user.age is not None and user.age >= 20:
+            if user.age is not None and user.age >= 20:     # 나이가 있고, 20세 이상인 경우만 성인 가능성 열어둠
                 adult_param = request.query_params.get("adult")
                 if adult_param == "true":
                     exclude_adult = False
 
-        # 성인 도서 제외가 필요한 경우
-        if exclude_adult:
+        if exclude_adult:   # 성인 도서 제외가 필요한 경우
             queryset = queryset.filter(book__adult=False)
 
         # =====================
@@ -111,13 +109,13 @@ class TradeSearchAPIView(APIView):
         min_price = request.query_params.get("min_price")
         max_price = request.query_params.get("max_price")
 
-        if min_price:
+        if min_price:   # min_price가 있다면
             try:
                 queryset = queryset.filter(price__gte=int(min_price))
             except (ValueError, TypeError):
                 pass
 
-        if max_price:
+        if max_price:   # max_price가 있다면
             try:
                 queryset = queryset.filter(price__lte=int(max_price))
             except (ValueError, TypeError):
@@ -139,6 +137,8 @@ class TradeSearchAPIView(APIView):
         serializer = TradeSearchSerializer(page, many=True)      # 페이지네이션된 데이터를 직렬화 (BookSearchSerializer 사용)
         return paginator.get_paginated_response(serializer.data) # 페이지네이션된 응답 반환
 
+
+
 # generices를 쓰지 않고 기본 APIView 만 썼으면 머리는 좋아지나 효율이 안좋아질뻔;;
 # 여기엔 DRF가 미리 만들어둔 클래스가 많음
 # 아쉽게도 rest-framework에 있는게 아니네
@@ -150,6 +150,7 @@ class TradeListCreateView(ListCreateAPIView):
     queryset = Trade.objects.all().order_by('-created_at')
     serializer_class = TradeSerializer
     permission_classes = [IsAuthenticatedOrReadOnly] # 조회는 누구나, 등록은 로그인 유저만
+    pagination_class = TradePagination
 
     def perform_create(self, serializer):
         # 평점 등록 때처럼, 로그인한 유저를 판매자로 강제 지정!
@@ -179,7 +180,6 @@ class TradeDetailView(RetrieveUpdateDestroyAPIView):
     def retrieve(self, request, *args, **kwargs):
         # 1. URL의 id값으로 게시글 객체를 가져옵니다.
         instance = self.get_object()
-        print(instance)
         # 2. 조회수를 1 증가시키고 저장합니다.
         instance.view_count += 1
         instance.save()
@@ -189,7 +189,6 @@ class TradeDetailView(RetrieveUpdateDestroyAPIView):
         
         # 4. 최종 데이터를 응답합니다.
         return Response(serializer.data)
-
     # [삭제] DELETE 요청이 오면? 
     # 우리가 따로 안 적어도 부모 클래스(DestroyAPIView)가 
     # 내부적으로 'destroy' 함수를 실행해서 DB에서 싹 지워줍니다.

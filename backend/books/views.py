@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from django.shortcuts import get_object_or_404, get_list_or_404
 
-from .serializers import BookPreviewSerializer, BookDetailSerializer, BookSearchSerializer, BookBestSellerSerializer, BookRatingSerializer
+from .serializers import BookPreviewSerializer, BookDetailSerializer, BookSearchSerializer, BookBestSellerSerializer, BookRatingSerializer, BookAutocompleteSerializer
 from .models import Book, Bookmark, BookRating
 
 from rest_framework.views import APIView
@@ -221,3 +221,28 @@ class BookmarkedBooksView(ListAPIView):
         # 2. Bookmark 모델을 통해 해당 유저가 북마크한 도서들만 필터링합니다.
         # Bookmark 모델에서 Book을 참조하는 related_name='bookmarks'를 활용합니다.
         return Book.objects.filter(bookmarks__user=user).order_by('-bookmarks__created_at')
+    
+# 중고거래에서 도서 선택 시 검색과 select하기
+class BookAutocompleteAPIView(APIView):
+    def get(self, request):
+        # /api/books/autocomplete/?q=해 => request.query_params == {'q': '해'} => q = '해' : 자동 파싱
+        q = request.query_params.get('q', '')
+
+        queryset = Book.objects.filter(
+            title__icontains=q
+        ).order_by('title')[:10]  # 🔥 10개 제한
+        """
+        1. SQL 코드
+        SELECT *
+        FROM books_book
+        WHERE title LIKE '%해%
+        ORDER BY title ASC
+        LIMIT 10
+
+        - title 순으로 오름차순 정렬
+        - 10개만 보여줌
+        - 스크롤 만들고 싶으면 [:20] 후에 프론트에서 10개만 보이게하면 스크롤 생김.
+        """
+
+        serializer = BookAutocompleteSerializer(queryset, many=True)
+        return Response(serializer.data)

@@ -79,3 +79,9 @@ class BookTradeSerializer(serializers.ModelSerializer):
         model = Book
         fields = ('id', 'cover', 'title', 'customer_review_rank', 'adult', 'price_standard', 'category')  
 
+
+# 중고거래 도서 검색 API용
+class BookAutocompleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = ['id', 'title']
