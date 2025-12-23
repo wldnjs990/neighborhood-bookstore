@@ -1,8 +1,12 @@
 <template>
   <section>
-    <h1>MindRead에 오신 것을 환영합니다!</h1>
-    <button class="btn">d</button>
+    <h1 class="">로그인 해라 ㅇㅇ</h1>
+    <form @submit.prevent="">
+      <Input />
+    </form>
   </section>
 </template>
 
-<script setup></script>
+<script setup>
+import Input from '@/components/Input.vue'
+</script>
