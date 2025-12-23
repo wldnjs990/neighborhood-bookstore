@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>도서 자동완성 테스트</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    .autocomplete {
+      position: relative;
+      width: 300px;
+    }
+
+    .dropdown {
+      position: absolute;
+      width: 100%;
+      max-height: 240px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      background: white;
+      z-index: 10;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+
+    .dropdown li {
+      padding: 8px;
+      cursor: pointer;
+    }
+
+    .dropdown li:hover {
+      background-color: #f5f5f5;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>도서 자동완성 테스트</h2>
+
+  <div class="autocomplete">
+    <input
+      type="text"
+      id="book-input"
+      placeholder="도서명을 입력하세요"
+    />
+    <ul id="dropdown" class="dropdown" style="display: none;"></ul>
+  </div>
+
+  <p id="selected"></p>
+
+  <script>
+    const input = document.getElementById('book-input')
+    const dropdown = document.getElementById('dropdown')
+    const selected = document.getElementById('selected')
+
+    let timer = null
+
+    input.addEventListener('input', () => {
+      clearTimeout(timer)
+
+      const query = input.value.trim()
+
+      if (!query) {
+        dropdown.style.display = 'none'
+        return
+      }
+
+      timer = setTimeout(async () => {
+        const res = await fetch(
+          `http://127.0.0.1:8000/api/books/autocomplete/?q=${query}`
+        )
+        const books = await res.json()
+
+        dropdown.innerHTML = ''
+
+        if (books.length === 0) {
+          dropdown.style.display = 'none'
+          return
+        }
+
+        books.forEach(book => {
+          const li = document.createElement('li')
+          li.textContent = book.title
+          li.onclick = () => {
+            input.value = book.title
+            selected.textContent = `선택된 도서: ${book.title + book.id}`
+            dropdown.style.display = 'none'
+          }
+          dropdown.appendChild(li)
+        })
+
+        dropdown.style.display = 'block'
+      }, 300)
+    })
+  </script>
+
+</body>
+</html>
