@@ -8,8 +8,8 @@ from rest_framework.permissions import IsAuthenticated
 
 from django.shortcuts import get_object_or_404, get_list_or_404
 
-from .serializers import BookPreviewSerializer, BookDetailSerializer, BookSearchSerializer, BookBestSellerSerializer
-from .models import Book, Bookmark
+from .serializers import BookPreviewSerializer, BookDetailSerializer, BookSearchSerializer, BookBestSellerSerializer, BookRatingSerializer
+from .models import Book, Bookmark, BookRating
 
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
@@ -34,7 +34,6 @@ def book_list(request):
 
 # 도서 상세
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def book_detail(request, id):
     book = get_object_or_404(Book, pk=id)
     if request.method == 'GET':
@@ -169,4 +168,52 @@ class BestSellerAPIView(APIView):
         return Response(serializer.data)
 
 
+class BookRatingView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request, id):
+        # 1. 어떤 책인지 URL에서 가져옴
+        book = get_object_or_404(Book, pk=id)
+        
+        # 2. 시리얼라이저에 데이터(score) 전달
+        serializer = BookRatingSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            # 3. 여기서 중요! save()할 때 유저와 책 정보를 강제로 넣어줍니다.
+            # 이러면 Vue에서 유저ID를 보낼 필요가 없어 보안에 안전합니다.
+            rating, created = BookRating.objects.update_or_create(
+                user=request.user,  # 요청을 보낸 로그인 유저
+                book=book,          # URL로 들어온 책
+                defaults={'score': serializer.validated_data['score']}
+            )
+            print(rating)
+            print(created)
+            
+            # signal 사용할 때 발생할 수 있는 문제점 해결 완료 (회고 딸깍)
+            # 이 순간 signals.py가 발동하여 Book 모델의 average_rating을 갱신합니다.
+            book.refresh_from_db()
+
+            return Response({
+                "message": "등록 완료",
+                "average_rating": book.average_rating,
+                "rating_count": book.rating_count
+            }, status=status.HTTP_200_OK)
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+from rest_framework.generics import ListAPIView
+
+# 프로필 페이지에서 조회할 수 있게 해줘야 함
+class BookmarkedBooksView(ListAPIView):
+    """사용자가 북마크한 도서 목록 조회"""
+    serializer_class = BookPreviewSerializer
+    permission_classes = [IsAuthenticated] # 로그인한 유저만 본인의 북마크 확인 가능
+
+    def get_queryset(self):
+        # 1. 현재 요청을 보낸 유저 정보를 가져옵니다.
+        user = self.request.user
+        
+        # 2. Bookmark 모델을 통해 해당 유저가 북마크한 도서들만 필터링합니다.
+        # Bookmark 모델에서 Book을 참조하는 related_name='bookmarks'를 활용합니다.
+        return Book.objects.filter(bookmarks__user=user).order_by('-bookmarks__created_at')
