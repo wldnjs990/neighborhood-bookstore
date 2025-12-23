@@ -7,6 +7,7 @@ User = get_user_model()
 class SignupSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     password_confirm = serializers.CharField(write_only=True)
+    book_mbti = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
@@ -20,16 +21,35 @@ class SignupSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data['password'] != data['password_confirm']:
             raise serializers.ValidationError("비밀번호가 일치하지 않습니다.")
-        return data
+        
+        # 📚 MBTI 검증
+        mbti = data.get('book_mbti')
+        if not mbti or len(mbti) != 4:
+            raise serializers.ValidationError("책 MBTI는 필수이며 4글자여야 합니다.")
 
+        valid_sets = [
+            ('S', 'F'),
+            ('R', 'I'),
+            ('E', 'D'),
+            ('P', 'C'),
+        ]
+
+        for idx, char in enumerate(mbti):
+            if char not in valid_sets[idx]:
+                raise serializers.ValidationError("올바르지 않은 책 MBTI 조합입니다.")
+
+        return data
+    
     def create(self, validated_data):
         validated_data.pop('password_confirm')
+
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data.get('email', ''),
             password=validated_data['password'],
             nickname=validated_data.get('nickname'),
-            age=validated_data.get('age')
+            age=validated_data.get('age'),
+            book_mbti=validated_data['book_mbti'],
         )
         return user
 
