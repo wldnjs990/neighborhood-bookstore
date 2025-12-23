@@ -1,2 +1,20 @@
 @import 'tailwindcss';
-@plugin "daisyui";
+@plugin "daisyui" {
+  themes:
+    retro --default,
+    /* light 테마를 retro 테마로 설정 */ 
+    dark --prefersdark,
+    /* dark 테마를 시스템 다크모드 감지 시 자동 적용 */
+    light,
+    cupcake,
+  root: ':root'; /* CSS 변수를 :root에 적용 */
+  include:; /* 포함할 DaisyUI 컴포넌트 (비어있음 = 전체 포함) */
+  exclude:; /* 제외할 DaisyUI 컴포넌트 (비어있음 = 제외 없음) */
+  logs: true; /* 빌드 시 로그 출력 활성화 */
+}
+
+/* 수동으로 테마 변경하려면
+<div data-theme="dark"> # 이렇게 data-theme을 dark로 변경시, 영역 내부의 daisy컴포넌트들에게 dark 스타일 적용!
+    <button class="btn btn-primary">항상 dark 테마</button>
+</div> 
+*/
