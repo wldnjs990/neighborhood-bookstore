@@ -14,7 +14,7 @@ class TradeSearchAPIView(APIView):
         # 🔍 검색 (제목 / 내용 / 도서명)
         # =====================
         search = request.query_params.get("search")
-        searchType = request.query_params.get("search_type", "title")
+        searchType = request.query_params.get("searchType", "title")
 
         if search:
             if searchType == "title":
@@ -23,11 +23,18 @@ class TradeSearchAPIView(APIView):
                 queryset = queryset.filter(content__icontains=search)
             elif searchType == "book":
                 queryset = queryset.filter(book__title__icontains=search)
+        
+        # =====================
+        # 📚 특정 도서
+        # =====================
+        book_id = request.query_params.get("book_id")
+        if book_id:
+            queryset = queryset.filter(book_id=book_id)
 
         # =====================
         # 🏷 판매 유형
         # =====================
-        saleTypes = request.query_params.getlist("sale_type")
+        saleTypes = request.query_params.getlist("saleType")
         print(saleTypes)
         if saleTypes:
             queryset = queryset.filter(sale_type__in=saleTypes)
@@ -35,7 +42,7 @@ class TradeSearchAPIView(APIView):
         # =====================
         # 📦 거래 상태 (기본: 판매중)
         # =====================
-        status = request.query_params.get("status", "available")
+        status = request.query_params.get("status")
         if status:
             queryset = queryset.filter(status=status)
 
@@ -62,12 +69,6 @@ class TradeSearchAPIView(APIView):
         if max_price:
             queryset = queryset.filter(price__lte=max_price)
 
-        # =====================
-        # 📚 특정 도서
-        # =====================
-        book_id = request.query_params.get("book_id")
-        if book_id:
-            queryset = queryset.filter(book_id=book_id)
 
         # =====================
         # 📦 거래 상태 (체크박스 다중 선택)
@@ -75,7 +76,11 @@ class TradeSearchAPIView(APIView):
         statuses = request.query_params.getlist("status")
 
         if statuses:
-            queryset = queryset.filter(status__in=statuses)
+            status_q = Q()
+            for r in statuses:
+                status_q |= Q(status__icontains=r)
+
+            queryset = queryset.filter(status_q)
             
         # =====================
         # 🔃 정렬
