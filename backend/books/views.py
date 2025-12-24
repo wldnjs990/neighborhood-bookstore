@@ -261,12 +261,12 @@ class BookRecommendAPIView(APIView):
     
 
     def post(self, request):
-        print("====== USER DEBUG ======")
-        print("user:", request.user)
-        print("is_authenticated:", request.user.is_authenticated)
-        print("book_mbti:", getattr(request.user, "book_mbti", None))
-        print("====== END USER DEBUG ======")
-        
+        # print("====== USER DEBUG ======")
+        # print("user:", request.user)
+        # print("is_authenticated:", request.user.is_authenticated)
+        # print("book_mbti:", getattr(request.user, "book_mbti", None))
+        # print("====== END USER DEBUG ======")
+
         # 1️⃣ 요청 데이터
         category_ids = request.data.get("category_ids", [])
         user_prompt = request.data.get("user_prompt", "").strip()
@@ -277,18 +277,18 @@ class BookRecommendAPIView(APIView):
             category_ids=category_ids
         )
         candidate_books = selector.get_top_50()
-        print("====== RECOMMEND DEBUG ======")
-        for i, book in enumerate(candidate_books, start=1):
-            print(
-                f"{i:02d}. "
-                f"title={book.title} | "
-                f"sales_point={book.sales_point} | "
-                f"popularity={round(book.popularity_score, 4)} | "
-                f"trend_boost={book.trend_boost} | "
-                f"review_boost={book.review_boost} | "
-                f"final_score={round(book.final_score, 4)} | "
-            )
-        print("====== END DEBUG ======")
+        # print("====== RECOMMEND DEBUG ======")
+        # for i, book in enumerate(candidate_books, start=1):
+        #     print(
+        #         f"{i:02d}. "
+        #         f"title={book.title} | "
+        #         f"sales_point={book.sales_point} | "
+        #         f"popularity={round(book.popularity_score, 4)} | "
+        #         f"trend_boost={book.trend_boost} | "
+        #         f"review_boost={book.review_boost} | "
+        #         f"final_score={round(book.final_score, 4)} | "
+        #     )
+        # print("====== END DEBUG ======")
 
         # 3️⃣ BookMBTI 고정 프롬프트
         mbti_info_prompt = ""
@@ -309,11 +309,20 @@ class BookRecommendAPIView(APIView):
             many=True
         ).data
 
-        print("====== BOOKS PAYLOAD SAMPLE ======")
-        for book in books_payload[:3]:
-            print(book)
-        print(f"... total books = {len(books_payload)}")
-        print("====== END PAYLOAD ======")
+        # 🔀 AI 편향 방지용 셔플 (중요!)
+        import random
+        books_payload = list(books_payload)
+        random.shuffle(books_payload)
+        print("===== SHUFFLED CANDIDATES =====")
+        for b in books_payload[:10]:
+            print(b["title"])
+        print("===== END =====")
+
+        # print("====== BOOKS PAYLOAD SAMPLE ======")
+        # for book in books_payload[:3]:
+        #     print(book)
+        # print(f"... total books = {len(books_payload)}")
+        # print("====== END PAYLOAD ======")
 
         # 5️⃣ 프롬프트 생성
         prompt = build_recommend_prompt(
@@ -322,30 +331,32 @@ class BookRecommendAPIView(APIView):
             books_payload=books_payload
         )
 
-        print("====== FINAL PROMPT ======")
-        print(prompt)
-        print("====== PROMPT LENGTH ======")
-        print(len(prompt))
-        print("====== END PROMPT ======")
+        # print("====== FINAL PROMPT ======")
+        # print(prompt)
+        # print("====== PROMPT LENGTH ======")
+        # print(len(prompt))
+        # print("====== END PROMPT ======")
 
-        # # 6️⃣ AI 호출
-        # result = llm_client.recommend_books(prompt)
+        # 6️⃣ AI 호출
+        result = llm_client.recommend_books(prompt)
 
-        # return Response(result)
-        return Response({
-            "candidate_count": len(candidate_books),
-            "candidates": [
-                {
-                    "id": book.id,
-                    "title": book.title,
-                    "category" : book.category.id,
-                    "description" : book.description,
-                    "sales_point": book.sales_point,
-                    "best_rank": book.best_rank,
-                    "customer_review_rank": book.customer_review_rank,
-                    "pub_date": book.pub_date,
-                    "adult": book.adult,
-                }
-                for book in candidate_books
-            ]
-        })
+        return Response(result)
+    
+        # 50권 호출 확인용 더미 return
+        # return Response({
+        #     "candidate_count": len(candidate_books),
+        #     "candidates": [
+        #         {
+        #             "id": book.id,
+        #             "title": book.title,
+        #             "category" : book.category.id,
+        #             "description" : book.description,
+        #             "sales_point": book.sales_point,
+        #             "best_rank": book.best_rank,
+        #             "customer_review_rank": book.customer_review_rank,
+        #             "pub_date": book.pub_date,
+        #             "adult": book.adult,
+        #         }
+        #         for book in candidate_books
+        #     ]
+        # })

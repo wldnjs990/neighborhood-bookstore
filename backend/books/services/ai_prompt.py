@@ -10,7 +10,9 @@ def build_recommend_prompt(
     Rules:
     - You MUST recommend books ONLY from the candidate list.
     - Choose EXACTLY 3 books.
-    - Explain briefly why each book matches the user.
+    - Explain in detail why each book matches the user.
+    - Always go through the candidate list until the end and proceed with the recommendation.
+    - Candidate lists are completely randomly shuffled.
     - Return JSON only.
 
     [User Reading Preference - Book MBTI]

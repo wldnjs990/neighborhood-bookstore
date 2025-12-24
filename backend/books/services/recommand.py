@@ -25,8 +25,6 @@ from django.db.models import (
     ExpressionWrapper,
 )
 from django.db.models.functions import (
-    Coalesce,
-    ExtractYear,
     Log,
 )
 from django.utils.timezone import now
@@ -88,16 +86,19 @@ class BookRecommendationCandidate:
 
         qs = self._base_queryset().annotate(
             # ── 2️⃣ 판매 지수 (로그 스케일)
+            # popularity_score=ExpressionWrapper(
+            #     Log(100,F("sales_point") + 1),
+            #     output_field=FloatField()
+            # ),
             popularity_score=ExpressionWrapper(
-                Log(2,F("sales_point") + 1),
+                Log(100000, F("sales_point") + 1),
                 output_field=FloatField()
             ),
-
             # ── 3️⃣ 베스트셀러 조건부 보정
             trend_boost=Case(
-                When(best_rank__lte=10, then=Value(1.30)),
-                When(best_rank__lte=50, then=Value(1.15)),
-                When(best_rank__lte=100, then=Value(1.05)),
+                When(best_rank__lte=10, then=Value(1.50)),
+                When(best_rank__lte=50, then=Value(1.3)),
+                When(best_rank__lte=100, then=Value(1.1)),
                 default=Value(1.00),
                 output_field=FloatField(),
             ),
@@ -122,5 +123,5 @@ class BookRecommendationCandidate:
         return (
             qs.order_by(
                 "-final_score",     # ⭐ 최종 추천 점수
-            )[:50]
+            )[:70]
         )
