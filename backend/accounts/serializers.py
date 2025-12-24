@@ -21,6 +21,7 @@ class SignupSerializer(serializers.ModelSerializer):
             'email': {'required': False},
             'nickname': {'required': False},
             'age': {'required': False},
+            'book_mbti': {'required': False},
         }
 
     def validate(self, data):
@@ -37,7 +38,7 @@ class SignupSerializer(serializers.ModelSerializer):
             password=validated_data['password'],
             nickname=validated_data.get('nickname'),
             age=validated_data.get('age'),
-            book_mbti=validated_data['book_mbti'],
+            book_mbti=validated_data.get('book_mbti'),
         )
         return user
 
