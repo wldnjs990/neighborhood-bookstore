@@ -62,6 +62,7 @@ class Command(BaseCommand):
                         "description",
                         "priceStandard",
                         "priceSales",
+                        "salesPoint",  # 쉼표 추가
                         "adult",
                         "itemId",
                         "mallType",
@@ -79,7 +80,7 @@ class Command(BaseCommand):
                             elif key == "isbn13":
                                 fixture_fields["isbn"] = book[key]
                             elif key == "author":
-                                fixture_fields["author"] = book[key]
+                                fixture_fields["author"] = book[key]                           
                             elif key == "publisher":
                                 fixture_fields["publisher"] = book[key]
                             elif key == "pubDate":
@@ -92,6 +93,8 @@ class Command(BaseCommand):
                                 fixture_fields["price_standard"] = book[key]
                             elif key == "priceSales":
                                 fixture_fields["price_sales"] = book[key]
+                            elif key == "salesPoint":
+                                fixture_fields["sales_point"] = book[key]
                             elif key == "adult":
                                 fixture_fields["adult"] = book[key]
                             elif key == "itemId":

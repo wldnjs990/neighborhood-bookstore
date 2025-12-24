@@ -58,6 +58,12 @@ class Book(models.Model):
         verbose_name='알라딘 베스트셀러 순위',
         help_text='알라딘 베스트셀러 순위'
     )
+    sales_point = models.IntegerField(
+        null=True,
+        blank=True,
+        verbose_name='알라딘 판매지수',
+        help_text='알라딘 판매지수 (높을수록 많이 팔림)'
+    )
 
     # 우리 서비스 평점 (Signal로 자동 업데이트)
     rating_count = models.IntegerField(
@@ -87,6 +93,7 @@ class Book(models.Model):
             models.Index(fields=['-created_at'], name='idx_book_created'),
             models.Index(fields=['-best_rank'], name='idx_book_best_rank'),
             models.Index(fields=['-customer_review_rank'], name='idx_book_review_rank'),
+            models.Index(fields=['-sales_point'], name='idx_book_sales_point'),
         ]
 
     def __str__(self):
