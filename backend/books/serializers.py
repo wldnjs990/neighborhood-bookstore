@@ -113,4 +113,21 @@ class BookAutocompleteSerializer(serializers.ModelSerializer):
         model = Book
         fields = ['id', 'title']
         
+
     
+class BookAIInputSerializer(serializers.ModelSerializer):
+    category = serializers.IntegerField(source="category.id", read_only=True)
+    class Meta:
+        model = Book
+        fields = [
+            "id",
+            "title",
+            "category",
+            "author",
+            "publisher",
+            "description",
+            "sales_point",
+            "best_rank",
+            "customer_review_rank",
+            "pub_date",
+        ]
