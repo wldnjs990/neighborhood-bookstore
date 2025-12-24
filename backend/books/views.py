@@ -258,8 +258,15 @@ class BookRecommendAPIView(APIView):
     - User.book_mbti → BookMBTI.info 자동 반영
     """
     permission_classes = [IsAuthenticatedOrReadOnly]
+    
 
     def post(self, request):
+        print("====== USER DEBUG ======")
+        print("user:", request.user)
+        print("is_authenticated:", request.user.is_authenticated)
+        print("book_mbti:", getattr(request.user, "book_mbti", None))
+        print("====== END USER DEBUG ======")
+        
         # 1️⃣ 요청 데이터
         category_ids = request.data.get("category_ids", [])
         user_prompt = request.data.get("user_prompt", "").strip()
@@ -288,11 +295,25 @@ class BookRecommendAPIView(APIView):
         if request.user.is_authenticated and request.user.book_mbti:
             mbti_info_prompt = request.user.book_mbti.info
 
+        print("====== MBTI PROMPT ======")
+        if request.user.is_authenticated and request.user.book_mbti:
+            print(request.user.book_mbti.code)
+            print(request.user.book_mbti.info)
+        else:
+            print("NO MBTI")
+        print("====== END MBTI ======")
+
         # 4️⃣ AI 입력용 도서 데이터
         books_payload = BookAIInputSerializer(
             candidate_books,
             many=True
         ).data
+
+        print("====== BOOKS PAYLOAD SAMPLE ======")
+        for book in books_payload[:3]:
+            print(book)
+        print(f"... total books = {len(books_payload)}")
+        print("====== END PAYLOAD ======")
 
         # 5️⃣ 프롬프트 생성
         prompt = build_recommend_prompt(
@@ -300,6 +321,12 @@ class BookRecommendAPIView(APIView):
             user_prompt=user_prompt,
             books_payload=books_payload
         )
+
+        print("====== FINAL PROMPT ======")
+        print(prompt)
+        print("====== PROMPT LENGTH ======")
+        print(len(prompt))
+        print("====== END PROMPT ======")
 
         # # 6️⃣ AI 호출
         # result = llm_client.recommend_books(prompt)
@@ -312,6 +339,7 @@ class BookRecommendAPIView(APIView):
                     "id": book.id,
                     "title": book.title,
                     "category" : book.category.id,
+                    "description" : book.description,
                     "sales_point": book.sales_point,
                     "best_rank": book.best_rank,
                     "customer_review_rank": book.customer_review_rank,

@@ -87,17 +87,6 @@ class BookRecommendationCandidate:
         current_year = now().year
 
         qs = self._base_queryset().annotate(
-            # ── 1️⃣ 출판일 정렬용 (NULL / 미래 → 0)
-            safe_pub_order=Case(
-                When(
-                    pub_date__isnull=False,
-                    pub_date__year__lte=current_year,
-                    then=ExtractYear("pub_date"),
-                ),
-                default=Value(0),
-                output_field=IntegerField(),
-            ),
-
             # ── 2️⃣ 판매 지수 (로그 스케일)
             popularity_score=ExpressionWrapper(
                 Log(2,F("sales_point") + 1),
