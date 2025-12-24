@@ -2,23 +2,23 @@
   <div class="navbar bg-base-100 shadow-sm">
     <!-- 홈 버튼 -->
     <div class="flex-1">
-      <a class="btn btn-ghost text-xl">daisyUI</a>
+      <RouterLink to="/" class="btn btn-ghost text-xl">서비스명 뭐하지</RouterLink>
     </div>
 
     <!-- 우측 버튼 -->
     <div class="flex-none">
-      <ul class="menu menu-horizontal px-1">
+      <ul class="menu menu-horizontal px-1 flex items-center">
         <!-- 로그인 -->
         <li>
-          <a @click="handleLogout" v-if="loginStore.token">로그아웃</a>
-          <RouterLink to="/login" v-else>로그인</RouterLink>
+          <RouterLink to="/login" v-if="!loginStore.token">로그인</RouterLink>
         </li>
         <!-- 회원정보 셀렉터 -->
-        <li>
+        <li v-if="loginStore.token">
           <details>
-            <summary>반갑습니다! ___님!</summary>
-            <ul class="bg-base-100 rounded-t-none p-2">
+            <summary>반갑습니다! {{ loginStore.user?.nickname }}님!</summary>
+            <ul class="bg-base-100 rounded-t-none p-2 z-10">
               <li><a>내 프로필</a></li>
+              <li><a @click="handleLogout">로그아웃</a></li>
             </ul>
           </details>
         </li>

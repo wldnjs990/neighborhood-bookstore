@@ -16,7 +16,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class BookPreviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
-        fields = ('id', 'best_rank', 'cover', 'title', 'customer_review_rank', 'adult')      
+        fields = ('id', 'best_rank', 'cover', 'title', 'customer_review_rank', 'adult', 'author')      
 
 
 # 도서 평점을 위한 serializer
