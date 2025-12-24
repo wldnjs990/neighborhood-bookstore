@@ -29,14 +29,9 @@ class Book(models.Model):
     )
     isbn = models.CharField(max_length=13, unique=True, verbose_name='ISBN-13')
     title = models.CharField(max_length=200, verbose_name='도서명')
-    author = models.CharField(max_length=200, verbose_name='저자')
-    publisher = models.CharField(max_length=100, verbose_name='출판사')
-    pub_date = models.DateField(null=True, blank=True, verbose_name='출판일')
     cover = models.URLField(max_length=500, null=True, blank=True, verbose_name='표지 이미지 URL')
-    description = models.TextField(null=True, blank=True, verbose_name='도서 소개')
     price_standard = models.IntegerField(default=0, verbose_name='정가')
     price_sales = models.IntegerField(default=0, verbose_name='판매가')
-    adult = models.BooleanField(default=False, verbose_name='성인 도서 여부')
     item_id = models.IntegerField(
         null=True,
         blank=True,
@@ -45,6 +40,16 @@ class Book(models.Model):
     )
     mall_type = models.CharField(max_length=20, null=True, blank=True, verbose_name='판매처')
 
+    #################################
+    #### 도서 추천에 사용할 컬럼들 ####
+    #↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓#
+    #↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓#
+
+    publisher = models.CharField(max_length=100, verbose_name='출판사')
+    author = models.CharField(max_length=200, verbose_name='저자')
+    description = models.TextField(null=True, blank=True, verbose_name='도서 소개')
+    pub_date = models.DateField(null=True, blank=True, verbose_name='출판일')
+    adult = models.BooleanField(default=False, verbose_name='성인 도서 여부')
     # 알라딘 순위 정보
     customer_review_rank = models.IntegerField(
         null=True,
@@ -58,6 +63,22 @@ class Book(models.Model):
         verbose_name='알라딘 베스트셀러 순위',
         help_text='알라딘 베스트셀러 순위'
     )
+    
+    # 도서 추천 우선순위 1순위
+    # sales_point = models.IntegerField(
+    #     default=0,
+    #     verbose_name="알라딘 판매 지수",
+    #     help_text="알라딘 API salesPoint 값 (누적 판매/인기 지표)"
+    # )
+    
+    
+    #↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑#
+    #↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑#
+    #### 도서 추천에 사용할 컬럼들 ####
+    #################################
+
+
+
 
     # 우리 서비스 평점 (Signal로 자동 업데이트)
     rating_count = models.IntegerField(
@@ -72,6 +93,8 @@ class Book(models.Model):
         verbose_name='평균 평점',
         help_text='BookRating 테이블에서 자동 계산 (0.00~5.00)'
     )
+
+
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='생성일')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='수정일')

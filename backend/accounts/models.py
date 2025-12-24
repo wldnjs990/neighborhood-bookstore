@@ -6,17 +6,14 @@ class User(AbstractUser):
     """커스텀 사용자 모델"""
     nickname = models.CharField(max_length=50, unique=True, null=True, blank=True, verbose_name='닉네임')
     age = models.IntegerField(null=True, blank=True, verbose_name='나이')
-    book_mbti = models.PositiveSmallIntegerField(
+    book_mbti = models.ForeignKey(
+        "BookMBTI",
+        on_delete=models.SET_NULL,   # MBTI 삭제 시 유저는 유지
         null=True,
         blank=True,
-        verbose_name="책 MBTI ID",
-        help_text="BookMBTI 테이블의 id 값"
+        related_name="users",
+        verbose_name="책 MBTI",
     )
-
-    class Meta:
-        db_table = 'user'
-        verbose_name = '사용자'
-        verbose_name_plural = '사용자'
 
     def __str__(self):
         return self.username
