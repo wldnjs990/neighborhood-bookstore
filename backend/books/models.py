@@ -64,12 +64,12 @@ class Book(models.Model):
         help_text='알라딘 베스트셀러 순위'
     )
     
-    # 도서 추천 우선순위 1순위
-    # sales_point = models.IntegerField(
-    #     default=0,
-    #     verbose_name="알라딘 판매 지수",
-    #     help_text="알라딘 API salesPoint 값 (누적 판매/인기 지표)"
-    # )
+    #도서 추천 우선순위 1순위
+    sales_point = models.IntegerField(
+        default=0,
+        verbose_name="알라딘 판매 지수",
+        help_text="알라딘 API salesPoint 값 (누적 판매/인기 지표)"
+    )
     
     
     #↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑#
@@ -110,6 +110,7 @@ class Book(models.Model):
             models.Index(fields=['-created_at'], name='idx_book_created'),
             models.Index(fields=['-best_rank'], name='idx_book_best_rank'),
             models.Index(fields=['-customer_review_rank'], name='idx_book_review_rank'),
+            models.Index(fields=['-sales_point'], name='idx_book_sales_point'),
         ]
 
     def __str__(self):
