@@ -19,17 +19,85 @@
             </div>
           </div>
 
-          <!-- 오른쪽: 북마크 버튼 -->
-          <button
-            @click="handleBookmark(book.id)"
-            class="btn btn-circle btn-lg"
-            :class="book.isBookmarked ? 'btn-error' : 'btn-ghost'"
-          >
-            <BookmarkIconSolid v-if="book.isBookmarked" class="w-8 h-8" />
-            <BookmarkIcon v-else class="w-8 h-8" />
-          </button>
+          <!-- 오른쪽: 북마크 & 평점 버튼 -->
+          <div class="flex gap-2">
+            <!-- 평점 주기 버튼 -->
+            <button
+              @click="openRatingModal"
+              class="btn btn-circle btn-lg btn-ghost"
+              title="평점 주기"
+            >
+              <StarIconSolid v-if="userRating" class="w-8 h-8 text-warning" />
+              <StarIcon v-else class="w-8 h-8" />
+            </button>
+
+            <!-- 북마크 버튼 -->
+            <button
+              @click="handleBookmark(book.id)"
+              class="btn btn-circle btn-lg"
+              :class="book.isBookmarked ? 'btn-error' : 'btn-ghost'"
+              title="북마크"
+            >
+              <BookmarkIconSolid v-if="book.isBookmarked" class="w-8 h-8" />
+              <BookmarkIcon v-else class="w-8 h-8" />
+            </button>
+          </div>
         </div>
       </div>
+
+      <!-- 평점 모달 -->
+      <dialog ref="ratingModal" class="modal">
+        <div class="modal-box">
+          <h3 class="text-2xl font-bold mb-4">이 책의 평점을 남겨주세요</h3>
+
+          <!-- 별점 선택 -->
+          <div class="flex flex-col items-center gap-6 py-6">
+            <div class="flex gap-2">
+              <button
+                v-for="star in 5"
+                :key="star"
+                @click="selectedRating = star"
+                class="btn btn-ghost btn-lg p-2"
+              >
+                <StarIconSolid
+                  v-if="star <= (hoverRating || selectedRating)"
+                  @mouseenter="hoverRating = star"
+                  @mouseleave="hoverRating = 0"
+                  class="w-12 h-12 text-warning"
+                />
+                <StarIcon
+                  v-else
+                  @mouseenter="hoverRating = star"
+                  @mouseleave="hoverRating = 0"
+                  class="w-12 h-12"
+                />
+              </button>
+            </div>
+
+            <div class="text-center">
+              <p class="text-3xl font-bold text-primary">{{ selectedRating }}.0</p>
+              <p class="text-sm text-base-content/60 mt-1">{{ getRatingText(selectedRating) }}</p>
+            </div>
+          </div>
+
+          <!-- 버튼 -->
+          <div class="modal-action">
+            <form method="dialog" class="flex gap-2">
+              <button class="btn btn-ghost">취소</button>
+              <button
+                @click="handleRating"
+                :disabled="selectedRating === 0"
+                class="btn btn-primary"
+              >
+                평점 등록
+              </button>
+            </form>
+          </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
 
       <!-- 중간: 도서 이미지 & 상세 정보 -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 pb-8 mb-8 border-b border-base-content/10">
@@ -61,7 +129,9 @@
               <div class="flex justify-between items-center py-3">
                 <span class="text-base-content/70">동네책방 사용자 평가</span>
                 <div class="text-right">
-                  <div class="text-2xl font-bold">{{ book.averageRating }}</div>
+                  <div class="text-2xl font-bold">
+                    {{ Number(book.averageRating || 0).toFixed(2) }}
+                  </div>
                   <div class="text-sm text-base-content/50">{{ book.ratingCount }}개의 평가</div>
                 </div>
               </div>
@@ -120,12 +190,11 @@
         </div>
 
         <!-- 중고 거래 목록 그리드 -->
-        <div v-if="book.trades && book.trades.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <TradeCard
-            v-for="trade in book.trades"
-            :key="trade.id"
-            :trade="trade"
-          />
+        <div
+          v-if="book.trades && book.trades.length > 0"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+        >
+          <TradeCard v-for="trade in book.trades" :key="trade.id" :trade="trade" />
         </div>
 
         <!-- 중고 거래 없을 때 -->
@@ -156,27 +225,100 @@
 </template>
 
 <script setup>
-import { getBookDetail, toggleBookmark } from '@/api/book'
+import { getBookDetail, toggleBookmark, rateBook } from '@/api/book'
 import { onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { BookmarkIcon, ArrowTopRightOnSquareIcon } from '@heroicons/vue/24/outline'
-import { BookmarkIcon as BookmarkIconSolid } from '@heroicons/vue/24/solid'
+import { useRoute, useRouter } from 'vue-router'
+import { BookmarkIcon, ArrowTopRightOnSquareIcon, StarIcon } from '@heroicons/vue/24/outline'
+import {
+  BookmarkIcon as BookmarkIconSolid,
+  StarIcon as StarIconSolid,
+} from '@heroicons/vue/24/solid'
 import ThreeDimentionImage from '@/components/ThreeDimentionImage.vue'
 import TradeCard from '@/components/TradeCard.vue'
+import { useToastStore } from '@/stores/toastStore'
+import { useLoginStore } from '@/stores/loginStore'
 
 const route = useRoute()
+const router = useRouter()
+const toastStore = useToastStore()
+const loginStore = useLoginStore()
 
 const book = ref({})
+const ratingModal = ref(null)
+const selectedRating = ref(0)
+const hoverRating = ref(0)
+const userRating = ref(null) // 사용자가 이미 준 평점
 
 onMounted(async () => {
   const data = await getBookDetail(route.params.id)
   console.log(data)
   book.value = data
+  // 사용자가 이미 준 평점이 있다면 userRating에 설정
+  userRating.value = data.userRating
 })
 
 const handleBookmark = async (id) => {
+  // 인증 확인
+  if (!loginStore.token) {
+    router.push({ name: 'login', query: { redirect: route.fullPath, authRequired: 'true' } })
+    return
+  }
+
   const response = await toggleBookmark(id)
   console.log(response.message)
   book.value.isBookmarked = response.isBookmarked
+
+  // 토스트 메시지
+  if (response.isBookmarked) {
+    toastStore.showToast('북마크에 추가되었습니다!', 'success')
+  } else {
+    toastStore.showToast('북마크가 해제되었습니다.', 'success')
+  }
+}
+
+const openRatingModal = () => {
+  // 인증 확인
+  if (!loginStore.token) {
+    router.push({ name: 'login', query: { redirect: route.fullPath, authRequired: 'true' } })
+    return
+  }
+
+  selectedRating.value = userRating.value || 0
+  ratingModal.value.showModal()
+}
+
+const handleRating = async () => {
+  if (selectedRating.value === 0) return
+
+  try {
+    const response = await rateBook(book.value.id, selectedRating.value)
+    console.log(response.message)
+
+    // 평점 정보 업데이트
+    userRating.value = selectedRating.value
+    book.value.averageRating = Number(response.averageRating).toFixed(2)
+    book.value.ratingCount = response.ratingCount
+
+    // 모달 닫기
+    ratingModal.value.close()
+
+    // 성공 메시지
+    toastStore.showToast('평점이 등록되었습니다!', 'success')
+  } catch (error) {
+    console.error('평점 등록 실패:', error)
+    toastStore.showToast('평점 등록에 실패했습니다. 다시 시도해주세요.', 'error')
+  }
+}
+
+const getRatingText = (rating) => {
+  const texts = {
+    0: '별점을 선택해주세요',
+    1: '별로예요',
+    2: '그저 그래요',
+    3: '괜찮아요',
+    4: '좋아요',
+    5: '최고예요!',
+  }
+  return texts[rating] || ''
 }
 </script>

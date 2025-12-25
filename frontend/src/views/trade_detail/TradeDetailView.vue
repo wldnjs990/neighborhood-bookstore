@@ -65,6 +65,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useLoginStore } from '@/stores/loginStore'
+import { useToastStore } from '@/stores/toastStore'
 import { getTradeDetail, deleteTrade as deleteTradeApi } from '@/api/trades'
 import TradeDetailHeader from './components/TradeDetailHeader.vue'
 import TradeDetailImage from './components/TradeDetailImage.vue'
@@ -76,6 +77,7 @@ import TradeBookCard from './components/TradeBookCard.vue'
 const route = useRoute()
 const router = useRouter()
 const loginStore = useLoginStore()
+const toastStore = useToastStore()
 
 // ==================== 상태 관리 ====================
 const trade = ref(null)
@@ -106,15 +108,13 @@ const fetchTradeDetail = async () => {
 
 // 거래 삭제
 const handleDelete = async () => {
-  if (!confirm('정말 삭제하시겠습니까?')) return
-
   try {
     await deleteTradeApi(trade.value.id)
-    alert('거래가 삭제되었습니다.')
+    toastStore.showToast('거래가 삭제되었습니다.', 'success')
     router.push({ name: 'trade' })
   } catch (error) {
     console.error('거래 삭제 실패:', error)
-    alert('거래 삭제에 실패했습니다.')
+    toastStore.showToast('거래 삭제에 실패했습니다.', 'error')
   }
 }
 

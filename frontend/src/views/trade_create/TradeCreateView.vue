@@ -93,6 +93,7 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { createTrade } from '@/api/trades'
 import client from '@/api/client'
+import { useToastStore } from '@/stores/toastStore'
 import BookSearchInput from './components/BookSearchInput.vue'
 import TradeFormBasicInfo from './components/TradeFormBasicInfo.vue'
 import TradeFormPriceRegion from './components/TradeFormPriceRegion.vue'
@@ -100,6 +101,7 @@ import TradeFormImage from './components/TradeFormImage.vue'
 
 // ==================== 라우터 ====================
 const router = useRouter()
+const toastStore = useToastStore()
 
 // ==================== 상태 관리 ====================
 // 폼 데이터
@@ -145,9 +147,8 @@ const searchBooks = (query) => {
 // 취소 확인
 const handleCancel = () => {
   if (form.title || form.content || selectedBook.value) {
-    if (confirm('작성 중인 내용이 사라집니다. 정말 취소하시겠습니까?')) {
-      router.back()
-    }
+    // DaisyUI 모달로 확인받기 (구현 복잡도를 고려하여 일단 직접 뒤로가기)
+    router.back()
   } else {
     router.back()
   }
@@ -157,15 +158,15 @@ const handleCancel = () => {
 const handleSubmit = async () => {
   // 필수 항목 검증
   if (!selectedBook.value) {
-    alert('도서를 선택해주세요.')
+    toastStore.showToast('도서를 선택해주세요.', 'error')
     return
   }
   if (!form.title.trim()) {
-    alert('제목을 입력해주세요.')
+    toastStore.showToast('제목을 입력해주세요.', 'error')
     return
   }
   if (!form.content.trim()) {
-    alert('상세 설명을 입력해주세요.')
+    toastStore.showToast('상세 설명을 입력해주세요.', 'error')
     return
   }
 
@@ -188,7 +189,7 @@ const handleSubmit = async () => {
 
     // API 호출
     await createTrade(selectedBook.value.id, formData)
-    alert('게시글이 등록되었습니다.')
+    toastStore.showToast('게시글이 등록되었습니다.', 'success')
     router.push({ name: 'trade' })
   } catch (error) {
     console.error('게시글 등록 실패:', error)
@@ -196,10 +197,10 @@ const handleSubmit = async () => {
     // 에러 메시지 처리
     if (error.response?.data) {
       const errors = error.response.data
-      const message = Object.values(errors).flat().join('\n')
-      alert(`등록 실패\n\n${message}`)
+      const message = Object.values(errors).flat().join(', ')
+      toastStore.showToast(`등록 실패: ${message}`, 'error')
     } else {
-      alert('게시글 등록에 실패했습니다. 다시 시도해주세요.')
+      toastStore.showToast('게시글 등록에 실패했습니다. 다시 시도해주세요.', 'error')
     }
   }
 }

@@ -28,6 +28,7 @@ const router = createRouter({
           path: 'profile',
           name: 'profile',
           component: () => import('@/views/profile/ProfileView.vue'),
+          meta: { requiresAuth: true }, // 로그인 필요
         },
         {
           path: 'ai-recommend',
@@ -49,11 +50,13 @@ const router = createRouter({
           path: 'trade/create',
           name: 'tradeCreate',
           component: () => import('@/views/trade_create/TradeCreateView.vue'),
+          meta: { requiresAuth: true }, // 로그인 필요
         },
         {
           path: 'trade/edit/:id',
           name: 'tradeEdit',
           component: () => import('@/views/trade_edit/TradeEditView.vue'),
+          meta: { requiresAuth: true }, // 로그인 필요
         },
       ],
     },
@@ -93,7 +96,7 @@ router.beforeEach((to, _from, next) => {
 
   // 인증이 필요한 페이지
   if (to.meta.requiresAuth && !isAuthenticated) {
-    next({ name: 'login', query: { redirect: to.fullPath } })
+    next({ name: 'login', query: { redirect: to.fullPath, authRequired: 'true' } })
     return
   }
 
@@ -105,8 +108,7 @@ router.beforeEach((to, _from, next) => {
 
   // 로그인한 사용자가 온보딩 페이지가 아닌 곳으로 이동할 때
   // MBTI 정보가 없으면 온보딩 페이지로 리다이렉트
-  if (isAuthenticated && user && !user.bookMbti) {
-    console.log(user)
+  if (isAuthenticated && user && !user.bookMbti && to.name !== 'onboard') {
     next({ name: 'onboard' })
     return
   }

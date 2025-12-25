@@ -12,10 +12,13 @@
     </div>
     <!-- 모바일 하단 네비게이션 -->
     <BottomNav />
+    <!-- 전역 토스트 알림 -->
+    <ToastNotification />
   </main>
 </template>
 
 <script setup>
 import Navbar from '@/layout/components/Navbar.vue'
 import BottomNav from '@/layout/components/BottomNav.vue'
+import ToastNotification from '@/components/ToastNotification.vue'
 </script>

@@ -34,6 +34,7 @@ class BookRatingSerializer(serializers.ModelSerializer):
 class BookDetailSerializer(serializers.ModelSerializer):
     # DB 필드엔 없지만 응답에는 포함될 가상 필드
     is_bookmarked = serializers.SerializerMethodField()
+    user_rating = serializers.SerializerMethodField()
     # 방법 1 : serializers.SerializerMethodField() 작성
     trades = serializers.SerializerMethodField()
     category = CategorySerializer()
@@ -53,8 +54,23 @@ class BookDetailSerializer(serializers.ModelSerializer):
         # 해당 유저가 이 도서(obj)를 북마크했는지 DB에서 확인
         # Bookmark 클래스에서 Book을 외래키로 참조 (북마크에서 도서 찾기) - related_name='bookmarks'
         # 이 도서를 참조하고 있는 북마크들의 목록을 가져오기
-        # 그 중에서 지금 로그인한 유저가 만든 것만 골라내기 
+        # 그 중에서 지금 로그인한 유저가 만든 것만 골라내기
         return obj.bookmarks.filter(user=request.user).exists()
+
+    def get_user_rating(self, obj):
+        """
+        로그인한 유저가 이 도서에 준 평점을 반환합니다.
+        """
+        request = self.context.get('request')
+        # 로그인하지 않은 유저라면 None 반환
+        if not request or not request.user.is_authenticated:
+            return None
+        # 해당 유저가 이 도서에 준 평점이 있는지 확인
+        try:
+            rating = BookRating.objects.get(user=request.user, book=obj)
+            return rating.score
+        except BookRating.DoesNotExist:
+            return None
 
     def get_trades(self, obj):
         """

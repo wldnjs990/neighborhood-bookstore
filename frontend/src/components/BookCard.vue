@@ -62,10 +62,10 @@
             />
           </svg>
           <span class="text-sm font-semibold ml-1">
-            {{ formatRating(book.average_rating) }}
+            {{ formatRating(book.averageRating) }}
           </span>
         </div>
-        <span class="text-xs text-base-content/50"> ({{ book.rating_count || 0 }}) </span>
+        <span class="text-xs text-base-content/50"> ({{ book.ratingRount || 0 }}) </span>
       </div>
     </div>
   </RouterLink>
