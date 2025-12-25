@@ -4,8 +4,14 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import SignupSerializer, UserSerializer, ProfileUpdateSerializer
+from drf_spectacular.utils import extend_schema
 
 
+@extend_schema(
+    request=SignupSerializer,
+    responses=UserSerializer,
+    summary="회원가입",
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def signup(request):
@@ -22,6 +28,21 @@ def signup(request):
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+# refresh 토큰 하나만 필요하기에 Serializers 없이 정보 받아옴
+@extend_schema(
+    request={
+        "application/json": {
+            "type": "object",
+            "properties": {
+                "refresh": {"type": "string"}
+            },
+            "required": ["refresh"]
+        }
+    },
+    responses=None,
+    summary="로그아웃"
+)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout(request):
@@ -49,6 +70,11 @@ def logout(request):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+
+@extend_schema(
+    responses=UserSerializer,
+    summary="내 프로필 조회"
+)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def profile(request):
@@ -57,6 +83,11 @@ def profile(request):
     return Response(serializer.data)
 
 
+@extend_schema(
+    request=ProfileUpdateSerializer,
+    responses=UserSerializer,
+    summary="프로필 수정"
+)
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def update_profile(request):

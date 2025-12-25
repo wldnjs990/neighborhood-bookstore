@@ -22,6 +22,8 @@ from rest_framework import status
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 
+# DRF-spectacular
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 class TradePagination(PageNumberPagination):
     page_size = 2                   # 한 페이지당 개수 (size를 요청 안 했을 경우, 한 페이지당 개수)
@@ -52,6 +54,20 @@ class TradePagination(PageNumberPagination):
 
 
 class TradeSearchAPIView(APIView):
+    @extend_schema(
+        parameters=[
+            OpenApiParameter("search", str, required=False),
+            OpenApiParameter("searchType", str, required=False, enum=["title", "content", "book", "isbn"]),
+            OpenApiParameter("adult", bool, required=False),
+            OpenApiParameter("saleTypes", str, required=False),
+            OpenApiParameter("status", str, required=False),
+            OpenApiParameter("regions", str, many=True, required=False, enum=["all", "seoul", "busan", "daegu", "incheon", "gwangju", "daejeon", "ulsan", "sejong", "gyeonggi", "gangwon", "chungbuk", "chungnam", "jeonbuk", "jeonnam", "gyeongbuk", "gyeongnam", "jeju"]),
+            OpenApiParameter("min_price", int, required=False),
+            OpenApiParameter("max_price", int, required=False),
+        ],
+        responses=TradeSearchSerializer,
+        summary="중고 도서 검색"
+    )
     def get(self, request):
         queryset = Trade.objects.select_related('book', 'user')
 
@@ -78,16 +94,38 @@ class TradeSearchAPIView(APIView):
         user = request.user
 
         # 기본값: 성인 도서 제외
-        exclude_adult = True
+        # exclude_adult = True
 
+        # if user.is_authenticated:
+        #     if user.age is not None and user.age >= 20:     # 나이가 있고, 20세 이상인 경우만 성인 가능성 열어둠
+        #         adult_param = request.query_params.get("adult")
+        #         if adult_param == "true":
+        #             exclude_adult = False
+
+        # if exclude_adult:   # 성인 도서 제외가 필요한 경우
+        #     queryset = queryset.filter(book__adult=False)
+
+        # 1. 로그인 여부부터 확인하고..
         if user.is_authenticated:
-            if user.age is not None and user.age >= 20:     # 나이가 있고, 20세 이상인 경우만 성인 가능성 열어둠
+            # 2. 나이가 존재하고 20살이 넘어가면..
+            if user.age is not None and user.age >= 20:
                 adult_param = request.query_params.get("adult")
-                if adult_param == "true":
-                    exclude_adult = False
-
-        if exclude_adult:   # 성인 도서 제외가 필요한 경우
+                if adult_param:
+                    # 3. 성인 도서를 필터 했으면 성인 도서만 보임
+                    if adult_param in ("true", 1, "True"):
+                        # book 필드에 있는 adult를 가져와야 함
+                        # 현재 테이블에는 book_adult 인스턴스 객체가 존재함 (search할 때 받아오는 값)
+                        queryset = queryset.filter(book__adult=True)
+                    # 3. 성인 도서를 필터 하지 않았으면 성인 도서는 안보임
+                    elif adult_param in ("false", 0, "False"):
+                        queryset = queryset.filter(book__adult=False)
+            # 2-1. 20살이 넘지 않았거나, 나이를 입력하지 않았기에 성인 도서 못봄
+            else:
+                queryset = queryset.filter(book__adult=False)
+        # 1-1. 로그인 안했으면 성인도서 못봄
+        else:
             queryset = queryset.filter(book__adult=False)
+        
 
         # =====================
         # 🏷 판매 유형
@@ -170,6 +208,12 @@ def trade_list(request):
 
 
 # 중고거래 게시글 생성 - 특정 책으로 생성
+# read_only = True 필드는 Swagger에서 자동으로 입력 불가로 처리함
+@extend_schema(
+    request=TradeSerializer,
+    responses=TradeSerializer,
+    summary="중고거래 게시글 생성"
+)
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def trade_create(request, book_pk):
@@ -188,6 +232,7 @@ def trade_create(request, book_pk):
             book=book
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 
 # class TradeDetailView(generics.RetrieveUpdateDestroyAPIView):

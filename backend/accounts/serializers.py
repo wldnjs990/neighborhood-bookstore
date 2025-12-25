@@ -77,6 +77,7 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("이미 사용 중인 닉네임입니다.")
         return value
 
+
 # 중고거래 조회용
 class UserSimpleSerializer(serializers.ModelSerializer):
     """중고거래 결과에서 username, email 등을 제외하고 id, nickname만 출력"""
