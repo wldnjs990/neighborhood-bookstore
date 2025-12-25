@@ -33,15 +33,9 @@ const handleLogin = async () => {
     })
 
     // 2. Store에 토큰 저장 (loginStore.js)
-    loginStore.setTokens(data.access, data.refresh)
+    loginStore.setTokens(data.access, data.refresh, data.user)
 
-    // 3. 사용자 정보가 있다면 저장
-    if (data.user) {
-      loginStore.user = data.user
-      localStorage.setItem('user', JSON.stringify(data.user))
-    }
-
-    // 4. 홈 페이지로 이동
+    // 3. 홈 페이지로 이동
     router.push('/')
 
     console.log('로그인 성공!')

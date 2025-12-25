@@ -30,3 +30,9 @@ export const logout = async () => {
   })
   return response.data
 }
+
+// 프로필 조회
+export const getUser = async () => {
+  const user = await client.get('/api/accounts/profile/')
+  return user.data
+}
