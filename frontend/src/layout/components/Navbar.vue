@@ -33,12 +33,12 @@
         </li>
         <!-- 회원정보 셀렉터 -->
         <li v-if="loginStore.token">
-          <details>
+          <details ref="detailsRef">
             <summary class="text-sm md:text-base">
               어서오세요 {{ loginStore.user?.nickname || '익명' }}님!
             </summary>
             <ul class="w-full bg-base-100 rounded-t-none p-2 z-10">
-              <li><RouterLink :to="{ name: 'profile' }">내 프로필</RouterLink></li>
+              <li><RouterLink :to="{ name: 'profile' }" @click="closeDropdown">내 프로필</RouterLink></li>
               <li><a @click="handleLogout">로그아웃</a></li>
             </ul>
           </details>
@@ -52,6 +52,7 @@
 </template>
 
 <script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useLoginStore } from '@/stores/loginStore'
 import ThemeController from './ThemeController.vue'
 import { logout } from '@/api/accounts'
@@ -63,10 +64,31 @@ import {
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
-
 const loginStore = useLoginStore()
+const detailsRef = ref(null)
+
+const closeDropdown = () => {
+  if (detailsRef.value) {
+    detailsRef.value.removeAttribute('open')
+  }
+}
+
+const handleClickOutside = (event) => {
+  if (detailsRef.value && !detailsRef.value.contains(event.target)) {
+    closeDropdown()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 
 const handleLogout = async () => {
+  closeDropdown()
   try {
     // 1. 먼저 서버에 로그아웃 요청 (토큰 블랙리스트 등록)
     await logout()

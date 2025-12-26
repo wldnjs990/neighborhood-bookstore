@@ -65,7 +65,7 @@
             {{ formatRating(book.averageRating) }}
           </span>
         </div>
-        <span class="text-xs text-base-content/50"> ({{ book.ratingRount || 0 }}) </span>
+        <span class="text-xs text-base-content/50"> ({{ book.ratingCount || 0 }}) </span>
       </div>
     </div>
   </RouterLink>
