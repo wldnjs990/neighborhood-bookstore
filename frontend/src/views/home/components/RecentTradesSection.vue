@@ -24,20 +24,7 @@
 
       <!-- 거래 없을 때 -->
       <div v-else class="flex flex-col items-center justify-center py-20 text-center">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-24 w-24 text-base-content/20 mb-4"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-          />
-        </svg>
+        <ShoppingBagIcon class="h-24 w-24 text-base-content/20 mb-4" />
         <h3 class="text-2xl font-bold text-base-content/50 mb-2">등록된 거래가 없습니다</h3>
         <p class="text-base-content/40">첫 번째 거래를 등록해보세요!</p>
       </div>
@@ -46,20 +33,7 @@
       <div class="flex justify-center">
         <RouterLink :to="{ name: 'trade' }" class="btn btn-outline btn-primary">
           전체 보기
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-5 w-5 ml-1"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 5l7 7-7 7"
-            />
-          </svg>
+          <ChevronRightIcon class="h-5 w-5 ml-1" />
         </RouterLink>
       </div>
     </div>
@@ -72,6 +46,7 @@ import { RouterLink } from 'vue-router'
 import TradeCard from '@/components/TradeCard.vue'
 import TradeCardSkeleton from '@/views/trade/components/TradeCardSkeleton.vue'
 import { searchTrades } from '@/api/trades'
+import { ChevronRightIcon, ShoppingBagIcon } from '@heroicons/vue/24/outline'
 
 const trades = ref([])
 const loading = ref(true)
